@@ -1,5 +1,7 @@
 package gobug
 
+// https://github.com/golang/go/issues/32288
+
 import (
 	"testing"
 	"time"
