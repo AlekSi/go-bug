@@ -16,7 +16,7 @@ func TestDuration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if s != `"-0.00000001s"` {
+	if s != `"-0.000000001s"` {
 		t.Errorf("Unexpected result: %s", s)
 	}
 }
