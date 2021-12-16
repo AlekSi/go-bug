@@ -167,53 +167,6 @@ func (d *Document) add(key string, value any) error {
 	return nil
 }
 
-// Get returns a value at the given key.
-func (d Document) Get(key string) (any, error) {
-	if value, ok := d.m[key]; ok {
-		return value, nil
-	}
-
-	return nil, fmt.Errorf("types.Document.Get: key not found: %q", key)
-}
-
-// Set the value of the given key, replacing any existing value.
-func (d *Document) Set(key string, value any) error {
-	if !isValidKey(key) {
-		return fmt.Errorf("types.Document.Set: invalid key: %q", key)
-	}
-
-	if err := validateValue(value); err != nil {
-		return fmt.Errorf("types.Document.validate: %w", err)
-	}
-
-	if _, ok := d.m[key]; !ok {
-		d.keys = append(d.keys, key)
-	}
-
-	d.m[key] = value
-
-	return nil
-}
-
-// Remove the given key, doing nothing if the key does not exist.
-func (d *Document) Remove(key string) {
-	if _, ok := d.m[key]; !ok {
-		return
-	}
-
-	delete(d.m, key)
-
-	for i, k := range d.keys {
-		if k == key {
-			d.keys = append(d.keys[:i], d.keys[i+1:]...)
-			return
-		}
-	}
-
-	// should not be reached
-	panic(fmt.Sprintf("types.Document.Remove: key not found: %q", key))
-}
-
 // check interfaces
 var (
 	_ document = Document{}
