@@ -71,9 +71,3 @@ func (doc Document) WriteTo(w *bufio.Writer) error {
 func (doc Document) MarshalBinary() ([]byte, error) {
 	return []byte{0x05, 0x00, 0x00, 0x00, 0x00}, nil
 }
-
-// check interfaces
-var (
-	_ bsontype = (*Document)(nil)
-	_ document = (*Document)(nil)
-)
