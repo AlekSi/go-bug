@@ -43,11 +43,6 @@ func mustConvertDocument(d document) *Document {
 		doc.keys = []string{}
 	}
 
-	// for validation
-	if _, err := types.ConvertDocument(doc); err != nil {
-		panic(err)
-	}
-
 	return doc
 }
 
@@ -114,12 +109,7 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 
 // WriteTo implements bsontype interface.
 func (doc Document) WriteTo(w *bufio.Writer) error {
-	v, err := doc.MarshalBinary()
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(v)
+	_, err := w.Write([]byte{0x05, 0x00, 0x00, 0x00, 0x00})
 	return err
 }
 
