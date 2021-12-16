@@ -8,9 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AlekSi/go-bug/50214/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/AlekSi/go-bug/50214/types"
 )
 
 func mustParseDump(s string) []byte {
