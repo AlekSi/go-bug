@@ -3,15 +3,13 @@ package bson
 import (
 	"bufio"
 	"encoding/hex"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/AlekSi/go-bug/50214/types"
 )
 
-func parseDump(s string) ([]byte, error) {
+func mustParseDump(s string) []byte {
 	var res []byte
 
 	scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(s)))
@@ -33,30 +31,16 @@ func parseDump(s string) ([]byte, error) {
 
 		b, err := hex.DecodeString(line)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 		res = append(res, b...)
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func mustParseDumpFile(path ...string) []byte {
-	b, err := os.ReadFile(filepath.Join(path...))
-	if err != nil {
 		panic(err)
 	}
 
-	b, err = parseDump(string(b))
-	if err != nil {
-		panic(err)
-	}
-
-	return b
+	return res
 }
 
 var arrayTestCases = []testCase{{
@@ -65,7 +49,10 @@ var arrayTestCases = []testCase{{
 		types.Array{},
 		types.MustMakeDocument(),
 	},
-	b: mustParseDumpFile("testdata", "array_all.hex"),
+	b: mustParseDump(`
+	00000000  15 00 00 00 04 30 00 05  00 00 00 00 03 31 00 05  |.....0.......1..|
+	00000010  00 00 00 00 00                                    |.....|
+		`),
 	j: "[[],{\"$k\":[]}]",
 }}
 
