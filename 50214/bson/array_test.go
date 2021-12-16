@@ -24,17 +24,8 @@ func TestArray(t *testing.T) {
 		t.Parallel()
 		testBinary(t, arrayTestCases, func() bsontype { return new(Array) })
 	})
-
-	t.Run("JSON", func(t *testing.T) {
-		t.Parallel()
-		testJSON(t, arrayTestCases, func() bsontype { return new(Array) })
-	})
 }
 
 func FuzzArrayBinary(f *testing.F) {
 	fuzzBinary(f, arrayTestCases, func() bsontype { return new(Array) })
-}
-
-func FuzzArrayJSON(f *testing.F) {
-	fuzzJSON(f, arrayTestCases, func() bsontype { return new(Array) })
 }
