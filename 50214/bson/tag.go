@@ -25,17 +25,13 @@ const (
 	tagArray           = tag(0x04) // Array
 	tagBinary          = tag(0x05) // Binary
 	tagUndefined       = tag(0x06) // Undefined
-	tagObjectID        = tag(0x07) // ObjectID
 	tagBool            = tag(0x08) // Bool
-	tagDateTime        = tag(0x09) // DateTime
 	tagNull            = tag(0x0a) // Null
-	tagRegex           = tag(0x0b) // Regex
 	tagDBPointer       = tag(0x0c) // DBPointer
 	tagJavaScript      = tag(0x0d) // JavaScript
 	tagSymbol          = tag(0x0e) // Symbol
 	tagJavaScriptScope = tag(0x0f) // JavaScriptScope
 	tagInt32           = tag(0x10) // Int32
-	tagTimestamp       = tag(0x11) // Timestamp
 	tagInt64           = tag(0x12) // Int64
 	tagDecimal         = tag(0x13) // Decimal
 	tagMinKey          = tag(0xff) // MinKey

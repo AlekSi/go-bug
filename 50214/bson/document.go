@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/AlekSi/go-bug/50214/types"
 )
@@ -187,13 +186,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 			}
 			doc.m[string(ename)] = bool(v)
 
-		case tagDateTime:
-			var v DateTime
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (DateTime): %w", err)
-			}
-			doc.m[string(ename)] = time.Time(v)
-
 		case tagNull:
 			doc.m[string(ename)] = nil
 
@@ -212,9 +204,9 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 			doc.m[string(ename)] = int64(v)
 
 		case tagDBPointer, tagDecimal, tagJavaScript, tagJavaScriptScope, tagMaxKey, tagMinKey, tagSymbol:
-			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x (%s)", t, tag(t))
+			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x", t)
 		default:
-			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x (%s)", t, tag(t))
+			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x", t)
 		}
 	}
 
@@ -311,15 +303,6 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 				return nil, err
 			}
 
-		case time.Time:
-			bufw.WriteByte(byte(tagDateTime))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := DateTime(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
 		case nil:
 			bufw.WriteByte(byte(tagNull))
 			if err := ename.WriteTo(bufw); err != nil {
@@ -396,10 +379,6 @@ func unmarshalJSONValue(data []byte) (any, error) {
 			var o Binary
 			err = o.UnmarshalJSON(data)
 			res = types.Binary(o)
-		case v["$d"] != nil:
-			var o DateTime
-			err = o.UnmarshalJSON(data)
-			res = time.Time(o)
 		case v["$l"] != nil:
 			var o Int64
 			err = o.UnmarshalJSON(data)
@@ -498,8 +477,6 @@ func marshalJSONValue(v any) ([]byte, error) {
 		o = Binary(v)
 	case bool:
 		o = Bool(v)
-	case time.Time:
-		o = DateTime(v)
 	case nil:
 		return []byte("null"), nil
 	case int32:

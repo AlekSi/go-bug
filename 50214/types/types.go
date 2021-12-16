@@ -45,7 +45,6 @@ package types
 
 import (
 	"fmt"
-	"time"
 )
 
 // validateValue validates value.
@@ -62,8 +61,6 @@ func validateValue(value any) error {
 	case Binary:
 		return nil
 	case bool:
-		return nil
-	case time.Time:
 		return nil
 	case nil:
 		return nil
