@@ -19,10 +19,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"github.com/AlekSi/go-bug/50214/types"
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 // Binary represents BSON Binary data type.
@@ -37,21 +37,21 @@ func (bin *Binary) bsontype() {}
 func (bin *Binary) ReadFrom(r *bufio.Reader) error {
 	var l int32
 	if err := binary.Read(r, binary.LittleEndian, &l); err != nil {
-		return lazyerrors.Errorf("bson.Binary.ReadFrom (binary.Read): %w", err)
+		return fmt.Errorf("bson.Binary.ReadFrom (binary.Read): %w", err)
 	}
 	if l < 0 {
-		return lazyerrors.Errorf("bson.Binary.ReadFrom: invalid length: %d", l)
+		return fmt.Errorf("bson.Binary.ReadFrom: invalid length: %d", l)
 	}
 
 	subtype, err := r.ReadByte()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Binary.ReadFrom (ReadByte): %w", err)
+		return fmt.Errorf("bson.Binary.ReadFrom (ReadByte): %w", err)
 	}
 	bin.Subtype = types.BinarySubtype(subtype)
 
 	bin.B = make([]byte, l)
 	if _, err := io.ReadFull(r, bin.B); err != nil {
-		return lazyerrors.Errorf("bson.Binary.ReadFrom (io.ReadFull): %w", err)
+		return fmt.Errorf("bson.Binary.ReadFrom (io.ReadFull): %w", err)
 	}
 
 	return nil
@@ -61,12 +61,12 @@ func (bin *Binary) ReadFrom(r *bufio.Reader) error {
 func (bin Binary) WriteTo(w *bufio.Writer) error {
 	v, err := bin.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Binary.WriteTo: %w", err)
+		return fmt.Errorf("bson.Binary.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.Binary.WriteTo: %w", err)
+		return fmt.Errorf("bson.Binary.WriteTo: %w", err)
 	}
 
 	return nil
@@ -101,10 +101,10 @@ func (bin *Binary) UnmarshalJSON(data []byte) error {
 	var o binaryJSON
 	err := dec.Decode(&o)
 	if err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 	if err = checkConsumed(dec, r); err != nil {
-		return lazyerrors.Errorf("bson.Binary.UnmarshalJSON: %w", err)
+		return fmt.Errorf("bson.Binary.UnmarshalJSON: %w", err)
 	}
 
 	bin.B = o.B
@@ -119,7 +119,7 @@ func (bin Binary) MarshalJSON() ([]byte, error) {
 		S: byte(bin.Subtype),
 	})
 	if err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 	return b, nil
 }

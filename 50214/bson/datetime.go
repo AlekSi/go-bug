@@ -19,9 +19,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"time"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 // DateTime represents BSON DateTime data type.
@@ -37,7 +36,7 @@ func (dt *DateTime) bsontype() {}
 func (dt *DateTime) ReadFrom(r *bufio.Reader) error {
 	var ts int64
 	if err := binary.Read(r, binary.LittleEndian, &ts); err != nil {
-		return lazyerrors.Errorf("bson.DateTime.ReadFrom (binary.Read): %w", err)
+		return fmt.Errorf("bson.DateTime.ReadFrom (binary.Read): %w", err)
 	}
 
 	// TODO Use .UTC(): https://github.com/FerretDB/FerretDB/issues/43
@@ -49,12 +48,12 @@ func (dt *DateTime) ReadFrom(r *bufio.Reader) error {
 func (dt DateTime) WriteTo(w *bufio.Writer) error {
 	v, err := dt.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.DateTime.WriteTo: %w", err)
+		return fmt.Errorf("bson.DateTime.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.DateTime.WriteTo: %w", err)
+		return fmt.Errorf("bson.DateTime.WriteTo: %w", err)
 	}
 
 	return nil
@@ -90,7 +89,7 @@ func (dt *DateTime) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Errorf("bson.DateTime.UnmarshalJSON: %s", err)
+		return fmt.Errorf("bson.DateTime.UnmarshalJSON: %s", err)
 	}
 
 	// TODO Use .UTC(): https://github.com/FerretDB/FerretDB/issues/43

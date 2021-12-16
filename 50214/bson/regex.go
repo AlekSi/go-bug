@@ -18,8 +18,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
+	"fmt"
 )
 
 // Regex represents BSON Regex data type.
@@ -34,10 +33,10 @@ func (regex *Regex) bsontype() {}
 func (regex *Regex) ReadFrom(r *bufio.Reader) error {
 	var pattern, options CString
 	if err := pattern.ReadFrom(r); err != nil {
-		return lazyerrors.Errorf("bson.Regex.ReadFrom (regex pattern): %w", err)
+		return fmt.Errorf("bson.Regex.ReadFrom (regex pattern): %w", err)
 	}
 	if err := options.ReadFrom(r); err != nil {
-		return lazyerrors.Errorf("bson.Regex.ReadFrom (regex options): %w", err)
+		return fmt.Errorf("bson.Regex.ReadFrom (regex options): %w", err)
 	}
 
 	*regex = Regex{
@@ -51,12 +50,12 @@ func (regex *Regex) ReadFrom(r *bufio.Reader) error {
 func (regex Regex) WriteTo(w *bufio.Writer) error {
 	v, err := regex.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Regex.WriteTo: %w", err)
+		return fmt.Errorf("bson.Regex.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.Regex.WriteTo: %w", err)
+		return fmt.Errorf("bson.Regex.WriteTo: %w", err)
 	}
 
 	return nil
@@ -99,7 +98,7 @@ func (regex *Regex) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Errorf("bson.Regex.UnmarshalJSON: %s", err)
+		return fmt.Errorf("bson.Regex.UnmarshalJSON: %s", err)
 	}
 
 	*regex = Regex{

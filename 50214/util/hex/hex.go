@@ -18,8 +18,6 @@ import (
 	"bufio"
 	"encoding/hex"
 	"strings"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 func Dump(b []byte) string {
@@ -48,13 +46,13 @@ func ParseDump(s string) ([]byte, error) {
 
 		b, err := hex.DecodeString(line)
 		if err != nil {
-			return nil, lazyerrors.Error(err)
+			return nil, err
 		}
 		res = append(res, b...)
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 
 	return res, nil

@@ -18,9 +18,8 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strconv"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 // Array represents BSON Array data type.
@@ -32,19 +31,19 @@ func (arr *Array) bsontype() {}
 func (arr *Array) ReadFrom(r *bufio.Reader) error {
 	var doc Document
 	if err := doc.ReadFrom(r); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 
 	s := make([]any, len(doc.m))
 
 	for i := 0; i < len(doc.m); i++ {
 		if k := doc.keys[i]; k != strconv.Itoa(i) {
-			return lazyerrors.Errorf("key %d is %q", i, k)
+			return fmt.Errorf("key %d is %q", i, k)
 		}
 
 		v, ok := doc.m[strconv.Itoa(i)]
 		if !ok {
-			return lazyerrors.Errorf("no element %d in array of length %d", i, len(doc.m))
+			return fmt.Errorf("no element %d in array of length %d", i, len(doc.m))
 		}
 		s[i] = v
 	}
@@ -58,11 +57,11 @@ func (arr *Array) ReadFrom(r *bufio.Reader) error {
 func (arr Array) WriteTo(w *bufio.Writer) error {
 	v, err := arr.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 
 	if _, err = w.Write(v); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 
 	return nil
@@ -84,7 +83,7 @@ func (arr Array) MarshalBinary() ([]byte, error) {
 	}
 	b, err := doc.MarshalBinary()
 	if err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 	return b, nil
 }
@@ -100,17 +99,17 @@ func (arr *Array) UnmarshalJSON(data []byte) error {
 
 	var rawMessages []json.RawMessage
 	if err := dec.Decode(&rawMessages); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 
 	*arr = make(Array, len(rawMessages))
 	for i, el := range rawMessages {
 		v, err := unmarshalJSONValue(el)
 		if err != nil {
-			return lazyerrors.Error(err)
+			return err
 		}
 
 		(*arr)[i] = v
@@ -131,7 +130,7 @@ func (arr Array) MarshalJSON() ([]byte, error) {
 
 		b, err := marshalJSONValue(el)
 		if err != nil {
-			return nil, lazyerrors.Error(err)
+			return nil, err
 		}
 
 		buf.Write(b)

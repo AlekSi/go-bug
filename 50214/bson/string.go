@@ -19,9 +19,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"io"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 // String represents BSON String data type.
@@ -33,19 +32,19 @@ func (str *String) bsontype() {}
 func (str *String) ReadFrom(r *bufio.Reader) error {
 	var l int32
 	if err := binary.Read(r, binary.LittleEndian, &l); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 	if l <= 0 {
-		return lazyerrors.Errorf("invalid length %d", l)
+		return fmt.Errorf("invalid length %d", l)
 	}
 
 	b := make([]byte, l)
 	if n, err := io.ReadFull(r, b); err != nil {
-		return lazyerrors.Errorf("expected %d, read %d: %w", len(b), n, err)
+		return fmt.Errorf("expected %d, read %d: %w", len(b), n, err)
 	}
 
 	if b[l-1] != 0 {
-		return lazyerrors.Errorf("unexpected terminating byte %#02x", b[l-1])
+		return fmt.Errorf("unexpected terminating byte %#02x", b[l-1])
 	}
 
 	*str = String(b[:l-1])
@@ -56,12 +55,12 @@ func (str *String) ReadFrom(r *bufio.Reader) error {
 func (str String) WriteTo(w *bufio.Writer) error {
 	v, err := str.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 
 	return nil
@@ -86,7 +85,7 @@ func (str *String) UnmarshalJSON(data []byte) error {
 
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 
 	*str = String(s)
@@ -97,7 +96,7 @@ func (str *String) UnmarshalJSON(data []byte) error {
 func (str String) MarshalJSON() ([]byte, error) {
 	b, err := json.Marshal(string(str))
 	if err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 
 	return b, nil

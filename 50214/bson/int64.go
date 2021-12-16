@@ -19,8 +19,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
+	"fmt"
 )
 
 // Int64 represents BSON Int64 data type.
@@ -31,7 +30,7 @@ func (i *Int64) bsontype() {}
 // ReadFrom implements bsontype interface.
 func (i *Int64) ReadFrom(r *bufio.Reader) error {
 	if err := binary.Read(r, binary.LittleEndian, i); err != nil {
-		return lazyerrors.Errorf("bson.Int64.ReadFrom (binary.Read): %w", err)
+		return fmt.Errorf("bson.Int64.ReadFrom (binary.Read): %w", err)
 	}
 
 	return nil
@@ -41,12 +40,12 @@ func (i *Int64) ReadFrom(r *bufio.Reader) error {
 func (i Int64) WriteTo(w *bufio.Writer) error {
 	v, err := i.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Int64.WriteTo: %w", err)
+		return fmt.Errorf("bson.Int64.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.Int64.WriteTo: %w", err)
+		return fmt.Errorf("bson.Int64.WriteTo: %w", err)
 	}
 
 	return nil
@@ -80,7 +79,7 @@ func (i *Int64) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Errorf("bson.Int64.UnmarshalJSON: %s", err)
+		return fmt.Errorf("bson.Int64.UnmarshalJSON: %s", err)
 	}
 
 	*i = Int64(o.L)

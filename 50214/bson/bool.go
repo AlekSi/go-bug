@@ -18,8 +18,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
+	"fmt"
 )
 
 // Bool represents BSON Bool data type.
@@ -31,7 +30,7 @@ func (b *Bool) bsontype() {}
 func (b *Bool) ReadFrom(r *bufio.Reader) error {
 	v, err := r.ReadByte()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Bool.ReadFrom: %w", err)
+		return fmt.Errorf("bson.Bool.ReadFrom: %w", err)
 	}
 
 	switch v {
@@ -40,7 +39,7 @@ func (b *Bool) ReadFrom(r *bufio.Reader) error {
 	case 1:
 		*b = true
 	default:
-		return lazyerrors.Errorf("bson.Bool.ReadFrom: unexpected byte %#02x", v)
+		return fmt.Errorf("bson.Bool.ReadFrom: unexpected byte %#02x", v)
 	}
 
 	return nil
@@ -50,12 +49,12 @@ func (b *Bool) ReadFrom(r *bufio.Reader) error {
 func (b Bool) WriteTo(w *bufio.Writer) error {
 	v, err := b.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Bool.WriteTo: %w", err)
+		return fmt.Errorf("bson.Bool.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.Bool.WriteTo: %w", err)
+		return fmt.Errorf("bson.Bool.WriteTo: %w", err)
 	}
 
 	return nil

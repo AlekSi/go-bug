@@ -48,9 +48,8 @@ import (
 	"bytes"
 	"encoding"
 	"encoding/json"
+	"fmt"
 	"io"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 type bsontype interface {
@@ -68,12 +67,12 @@ type bsontype interface {
 func checkConsumed(dec *json.Decoder, r *bytes.Reader) error {
 	if dr := dec.Buffered().(*bytes.Reader); dr.Len() != 0 {
 		b, _ := io.ReadAll(dr)
-		return lazyerrors.Errorf("%d bytes remains in the decoded: %s", dr.Len(), b)
+		return fmt.Errorf("%d bytes remains in the decoded: %s", dr.Len(), b)
 	}
 
 	if l := r.Len(); l != 0 {
 		b, _ := io.ReadAll(r)
-		return lazyerrors.Errorf("%d bytes remains in the reader: %s", l, b)
+		return fmt.Errorf("%d bytes remains in the reader: %s", l, b)
 	}
 
 	return nil

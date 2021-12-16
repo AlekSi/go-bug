@@ -19,8 +19,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
+	"fmt"
 )
 
 // Timestamp represents BSON Timestamp data type.
@@ -31,7 +30,7 @@ func (ts *Timestamp) bsontype() {}
 // ReadFrom implements bsontype interface.
 func (ts *Timestamp) ReadFrom(r *bufio.Reader) error {
 	if err := binary.Read(r, binary.LittleEndian, ts); err != nil {
-		return lazyerrors.Errorf("bson.Timestamp.ReadFrom (binary.Read): %w", err)
+		return fmt.Errorf("bson.Timestamp.ReadFrom (binary.Read): %w", err)
 	}
 
 	return nil
@@ -41,12 +40,12 @@ func (ts *Timestamp) ReadFrom(r *bufio.Reader) error {
 func (ts Timestamp) WriteTo(w *bufio.Writer) error {
 	v, err := ts.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Timestamp.WriteTo: %w", err)
+		return fmt.Errorf("bson.Timestamp.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.Timestamp.WriteTo: %w", err)
+		return fmt.Errorf("bson.Timestamp.WriteTo: %w", err)
 	}
 
 	return nil
@@ -80,7 +79,7 @@ func (ts *Timestamp) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Errorf("bson.Timestamp.UnmarshalJSON: %s", err)
+		return fmt.Errorf("bson.Timestamp.UnmarshalJSON: %s", err)
 	}
 
 	*ts = Timestamp(o.T)

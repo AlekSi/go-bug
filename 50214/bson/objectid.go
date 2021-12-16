@@ -19,9 +19,8 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 // ObjectID represents BSON ObjectID data type.
@@ -32,7 +31,7 @@ func (obj *ObjectID) bsontype() {}
 // ReadFrom implements bsontype interface.
 func (obj *ObjectID) ReadFrom(r *bufio.Reader) error {
 	if _, err := io.ReadFull(r, obj[:]); err != nil {
-		return lazyerrors.Errorf("bson.ObjectID.ReadFrom (io.ReadFull): %w", err)
+		return fmt.Errorf("bson.ObjectID.ReadFrom (io.ReadFull): %w", err)
 	}
 
 	return nil
@@ -42,12 +41,12 @@ func (obj *ObjectID) ReadFrom(r *bufio.Reader) error {
 func (obj ObjectID) WriteTo(w *bufio.Writer) error {
 	v, err := obj.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.ObjectID.WriteTo: %w", err)
+		return fmt.Errorf("bson.ObjectID.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.ObjectID.WriteTo: %w", err)
+		return fmt.Errorf("bson.ObjectID.WriteTo: %w", err)
 	}
 
 	return nil
@@ -79,7 +78,7 @@ func (obj *ObjectID) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Errorf("bson.ObjectID.UnmarshalJSON: %s", err)
+		return fmt.Errorf("bson.ObjectID.UnmarshalJSON: %s", err)
 	}
 
 	b, err := hex.DecodeString(o.O)
@@ -87,7 +86,7 @@ func (obj *ObjectID) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(b) != 12 {
-		return lazyerrors.Errorf("bson.ObjectID.UnmarshalJSON: %d bytes", len(b))
+		return fmt.Errorf("bson.ObjectID.UnmarshalJSON: %d bytes", len(b))
 	}
 	copy(obj[:], b)
 

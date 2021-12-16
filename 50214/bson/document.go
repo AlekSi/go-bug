@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/AlekSi/go-bug/50214/types"
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 const (
@@ -93,10 +92,10 @@ func (doc *Document) Keys() []string {
 func (doc *Document) ReadFrom(r *bufio.Reader) error {
 	var l int32
 	if err := binary.Read(r, binary.LittleEndian, &l); err != nil {
-		return lazyerrors.Errorf("bson.Document.ReadFrom (binary.Read): %w", err)
+		return fmt.Errorf("bson.Document.ReadFrom (binary.Read): %w", err)
 	}
 	if l < minDocumentLen || l > MaxDocumentLen {
-		return lazyerrors.Errorf("bson.Document.ReadFrom: invalid length %d", l)
+		return fmt.Errorf("bson.Document.ReadFrom: invalid length %d", l)
 	}
 
 	// make buffer
@@ -107,7 +106,7 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 	// read e_list and terminating zero
 	n, err := io.ReadFull(r, b[4:])
 	if err != nil {
-		return lazyerrors.Errorf("bson.Document.ReadFrom (io.ReadFull, expected %d, read %d): %w", len(b), n, err)
+		return fmt.Errorf("bson.Document.ReadFrom (io.ReadFull, expected %d, read %d): %w", len(b), n, err)
 	}
 
 	bufr := bufio.NewReader(bytes.NewReader(b[4:]))
@@ -117,20 +116,20 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 	for {
 		t, err := bufr.ReadByte()
 		if err != nil {
-			return lazyerrors.Errorf("bson.Document.ReadFrom (ReadByte): %w", err)
+			return fmt.Errorf("bson.Document.ReadFrom (ReadByte): %w", err)
 		}
 
 		if t == 0 {
 			// documented ended
 			if _, err := bufr.Peek(1); err != io.EOF {
-				return lazyerrors.Errorf("unexpected end of the document: %w", err)
+				return fmt.Errorf("unexpected end of the document: %w", err)
 			}
 			break
 		}
 
 		var ename CString
 		if err := ename.ReadFrom(bufr); err != nil {
-			return lazyerrors.Errorf("bson.Document.ReadFrom (ename.ReadFrom): %w", err)
+			return fmt.Errorf("bson.Document.ReadFrom (ename.ReadFrom): %w", err)
 		}
 
 		doc.keys = append(doc.keys, string(ename))
@@ -139,14 +138,14 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 		case tagDouble:
 			var v Double
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (Double): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (Double): %w", err)
 			}
 			doc.m[string(ename)] = float64(v)
 
 		case tagString:
 			var v String
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (String): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (String): %w", err)
 			}
 			doc.m[string(ename)] = string(v)
 
@@ -155,11 +154,11 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 
 			var v Document
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (embedded document): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (embedded document): %w", err)
 			}
 			doc.m[string(ename)], err = types.ConvertDocument(&v)
 			if err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (embedded document): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (embedded document): %w", err)
 			}
 
 		case tagArray:
@@ -167,38 +166,38 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 
 			var v Array
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (Array): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (Array): %w", err)
 			}
 			doc.m[string(ename)] = types.Array(v)
 
 		case tagBinary:
 			var v Binary
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (Binary): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (Binary): %w", err)
 			}
 			doc.m[string(ename)] = types.Binary(v)
 
 		case tagUndefined:
-			return lazyerrors.Errorf("bson.Document.ReadFrom: unhandled element type `Undefined (value) — Deprecated`")
+			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type `Undefined (value) — Deprecated`")
 
 		case tagObjectID:
 			var v ObjectID
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (ObjectID): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (ObjectID): %w", err)
 			}
 			doc.m[string(ename)] = types.ObjectID(v)
 
 		case tagBool:
 			var v Bool
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (Bool): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (Bool): %w", err)
 			}
 			doc.m[string(ename)] = bool(v)
 
 		case tagDateTime:
 			var v DateTime
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (DateTime): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (DateTime): %w", err)
 			}
 			doc.m[string(ename)] = time.Time(v)
 
@@ -208,40 +207,40 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 		case tagRegex:
 			var v Regex
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (Regex): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (Regex): %w", err)
 			}
 			doc.m[string(ename)] = types.Regex(v)
 
 		case tagInt32:
 			var v Int32
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (Int32): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (Int32): %w", err)
 			}
 			doc.m[string(ename)] = int32(v)
 
 		case tagTimestamp:
 			var v Timestamp
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (Timestamp): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (Timestamp): %w", err)
 			}
 			doc.m[string(ename)] = types.Timestamp(v)
 
 		case tagInt64:
 			var v Int64
 			if err := v.ReadFrom(bufr); err != nil {
-				return lazyerrors.Errorf("bson.Document.ReadFrom (Int64): %w", err)
+				return fmt.Errorf("bson.Document.ReadFrom (Int64): %w", err)
 			}
 			doc.m[string(ename)] = int64(v)
 
 		case tagDBPointer, tagDecimal, tagJavaScript, tagJavaScriptScope, tagMaxKey, tagMinKey, tagSymbol:
-			return lazyerrors.Errorf("bson.Document.ReadFrom: unhandled element type %#02x (%s)", t, tag(t))
+			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x (%s)", t, tag(t))
 		default:
-			return lazyerrors.Errorf("bson.Document.ReadFrom: unhandled element type %#02x (%s)", t, tag(t))
+			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x (%s)", t, tag(t))
 		}
 	}
 
 	if _, err := types.ConvertDocument(doc); err != nil {
-		return lazyerrors.Errorf("bson.Document.ReadFrom: %w", err)
+		return fmt.Errorf("bson.Document.ReadFrom: %w", err)
 	}
 
 	return nil
@@ -251,12 +250,12 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 func (doc Document) WriteTo(w *bufio.Writer) error {
 	v, err := doc.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Document.WriteTo: %w", err)
+		return fmt.Errorf("bson.Document.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.Document.WriteTo: %w", err)
+		return fmt.Errorf("bson.Document.WriteTo: %w", err)
 	}
 
 	return nil
@@ -278,128 +277,128 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 		case float64:
 			bufw.WriteByte(byte(tagDouble))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := Double(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case string:
 			bufw.WriteByte(byte(tagString))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := String(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case types.Document:
 			bufw.WriteByte(byte(tagDocument))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			doc, err := ConvertDocument(elV)
 			if err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := doc.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case types.Array:
 			bufw.WriteByte(byte(tagArray))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := Array(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case types.Binary:
 			bufw.WriteByte(byte(tagBinary))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := Binary(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case types.ObjectID:
 			bufw.WriteByte(byte(tagObjectID))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := ObjectID(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case bool:
 			bufw.WriteByte(byte(tagBool))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := Bool(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case time.Time:
 			bufw.WriteByte(byte(tagDateTime))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := DateTime(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case nil:
 			bufw.WriteByte(byte(tagNull))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case types.Regex:
 			bufw.WriteByte(byte(tagRegex))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := Regex(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case int32:
 			bufw.WriteByte(byte(tagInt32))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := Int32(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case types.Timestamp:
 			bufw.WriteByte(byte(tagTimestamp))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := Timestamp(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		case int64:
 			bufw.WriteByte(byte(tagInt64))
 			if err := ename.WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 			if err := Int64(elV).WriteTo(bufw); err != nil {
-				return nil, lazyerrors.Error(err)
+				return nil, err
 			}
 
 		default:
-			return nil, lazyerrors.Errorf("bson.Document.MarshalBinary: unhandled element type %T", elV)
+			return nil, fmt.Errorf("bson.Document.MarshalBinary: unhandled element type %T", elV)
 		}
 	}
 
 	if err := bufw.Flush(); err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 
 	var res bytes.Buffer
@@ -424,7 +423,7 @@ func unmarshalJSONValue(data []byte) (any, error) {
 		return nil, err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 
 	var res any
@@ -466,7 +465,7 @@ func unmarshalJSONValue(data []byte) (any, error) {
 			err = o.UnmarshalJSON(data)
 			res = int64(o)
 		default:
-			err = lazyerrors.Errorf("unmarshalJSONValue: unhandled map %v", v)
+			err = fmt.Errorf("unmarshalJSONValue: unhandled map %v", v)
 		}
 	case string:
 		res = v
@@ -481,7 +480,7 @@ func unmarshalJSONValue(data []byte) (any, error) {
 	case float64:
 		res = int32(v)
 	default:
-		err = lazyerrors.Errorf("unmarshalJSONValue: unhandled element %[1]T (%[1]v)", v)
+		err = fmt.Errorf("unmarshalJSONValue: unhandled element %[1]T (%[1]v)", v)
 	}
 
 	if err != nil {
@@ -502,23 +501,23 @@ func (doc *Document) UnmarshalJSON(data []byte) error {
 
 	var rawMessages map[string]json.RawMessage
 	if err := dec.Decode(&rawMessages); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 
 	b, ok := rawMessages["$k"]
 	if !ok {
-		return lazyerrors.Errorf("bson.Document.UnmarshalJSON: missing $k")
+		return fmt.Errorf("bson.Document.UnmarshalJSON: missing $k")
 	}
 
 	var keys []string
 	if err := json.Unmarshal(b, &keys); err != nil {
-		return lazyerrors.Error(err)
+		return err
 	}
 	if len(keys)+1 != len(rawMessages) {
-		return lazyerrors.Errorf("bson.Document.UnmarshalJSON: %d elements in $k, %d in total", len(keys), len(rawMessages))
+		return fmt.Errorf("bson.Document.UnmarshalJSON: %d elements in $k, %d in total", len(keys), len(rawMessages))
 	}
 
 	doc.keys = keys
@@ -527,17 +526,17 @@ func (doc *Document) UnmarshalJSON(data []byte) error {
 	for _, key := range keys {
 		b, ok = rawMessages[key]
 		if !ok {
-			return lazyerrors.Errorf("bson.Document.UnmarshalJSON: missing key %q", key)
+			return fmt.Errorf("bson.Document.UnmarshalJSON: missing key %q", key)
 		}
 		v, err := unmarshalJSONValue(b)
 		if err != nil {
-			return lazyerrors.Error(err)
+			return err
 		}
 		doc.m[key] = v
 	}
 
 	if _, err := types.ConvertDocument(doc); err != nil {
-		return lazyerrors.Errorf("bson.Document.UnmarshalJSON: %w", err)
+		return fmt.Errorf("bson.Document.UnmarshalJSON: %w", err)
 	}
 
 	return nil
@@ -574,16 +573,16 @@ func marshalJSONValue(v any) ([]byte, error) {
 	case int64:
 		o = Int64(v)
 	default:
-		return nil, lazyerrors.Errorf("marshalJSONValue: unhandled type %T", v)
+		return nil, fmt.Errorf("marshalJSONValue: unhandled type %T", v)
 	}
 
 	if err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 
 	b, err := o.MarshalJSON()
 	if err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 
 	return b, nil
@@ -596,7 +595,7 @@ func (doc Document) MarshalJSON() ([]byte, error) {
 	buf.WriteString(`{"$k":`)
 	b, err := json.Marshal(doc.keys)
 	if err != nil {
-		return nil, lazyerrors.Error(err)
+		return nil, err
 	}
 	buf.Write(b)
 
@@ -604,7 +603,7 @@ func (doc Document) MarshalJSON() ([]byte, error) {
 		buf.WriteByte(',')
 
 		if b, err = json.Marshal(key); err != nil {
-			return nil, lazyerrors.Error(err)
+			return nil, err
 		}
 		buf.Write(b)
 		buf.WriteByte(':')
@@ -612,7 +611,7 @@ func (doc Document) MarshalJSON() ([]byte, error) {
 		value := doc.m[key]
 		b, err := marshalJSONValue(value)
 		if err != nil {
-			return nil, lazyerrors.Errorf("bson.Document.MarshalJSON: %w", err)
+			return nil, fmt.Errorf("bson.Document.MarshalJSON: %w", err)
 		}
 
 		buf.Write(b)

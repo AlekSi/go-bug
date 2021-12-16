@@ -19,9 +19,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"math"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
 )
 
 // Double represents BSON Double data type.
@@ -33,7 +32,7 @@ func (d *Double) bsontype() {}
 func (d *Double) ReadFrom(r *bufio.Reader) error {
 	var bits uint64
 	if err := binary.Read(r, binary.LittleEndian, &bits); err != nil {
-		return lazyerrors.Errorf("bson.Double.ReadFrom (binary.Read): %w", err)
+		return fmt.Errorf("bson.Double.ReadFrom (binary.Read): %w", err)
 	}
 
 	*d = Double(math.Float64frombits(bits))
@@ -44,12 +43,12 @@ func (d *Double) ReadFrom(r *bufio.Reader) error {
 func (d Double) WriteTo(w *bufio.Writer) error {
 	v, err := d.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.Double.WriteTo: %w", err)
+		return fmt.Errorf("bson.Double.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.Double.WriteTo: %w", err)
+		return fmt.Errorf("bson.Double.WriteTo: %w", err)
 	}
 
 	return nil
@@ -83,7 +82,7 @@ func (d *Double) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Errorf("bson.Double.UnmarshalJSON: %w", err)
+		return fmt.Errorf("bson.Double.UnmarshalJSON: %w", err)
 	}
 
 	switch f := o.F.(type) {
@@ -98,10 +97,10 @@ func (d *Double) UnmarshalJSON(data []byte) error {
 		case "NaN":
 			*d = Double(math.NaN())
 		default:
-			return lazyerrors.Errorf("bson.Double.UnmarshalJSON: unexpected string %q", f)
+			return fmt.Errorf("bson.Double.UnmarshalJSON: unexpected string %q", f)
 		}
 	default:
-		return lazyerrors.Errorf("bson.Double.UnmarshalJSON: unexpected type %[1]T: %[1]v", f)
+		return fmt.Errorf("bson.Double.UnmarshalJSON: unexpected type %[1]T: %[1]v", f)
 	}
 
 	return nil

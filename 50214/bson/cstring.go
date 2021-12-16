@@ -18,8 +18,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-
-	"github.com/AlekSi/go-bug/50214/util/lazyerrors"
+	"fmt"
 )
 
 // CString represents BSON CString data type.
@@ -31,7 +30,7 @@ func (cstr *CString) bsontype() {}
 func (cstr *CString) ReadFrom(r *bufio.Reader) error {
 	b, err := r.ReadBytes(0)
 	if err != nil {
-		return lazyerrors.Errorf("bson.CString.ReadFrom: %w", err)
+		return fmt.Errorf("bson.CString.ReadFrom: %w", err)
 	}
 
 	*cstr = CString(b[:len(b)-1])
@@ -42,12 +41,12 @@ func (cstr *CString) ReadFrom(r *bufio.Reader) error {
 func (cstr CString) WriteTo(w *bufio.Writer) error {
 	v, err := cstr.MarshalBinary()
 	if err != nil {
-		return lazyerrors.Errorf("bson.CString.WriteTo: %w", err)
+		return fmt.Errorf("bson.CString.WriteTo: %w", err)
 	}
 
 	_, err = w.Write(v)
 	if err != nil {
-		return lazyerrors.Errorf("bson.CString.WriteTo: %w", err)
+		return fmt.Errorf("bson.CString.WriteTo: %w", err)
 	}
 
 	return nil
@@ -79,7 +78,7 @@ func (cstr *CString) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if err := checkConsumed(dec, r); err != nil {
-		return lazyerrors.Errorf("bson.CString.UnmarshalJSON: %s", err)
+		return fmt.Errorf("bson.CString.UnmarshalJSON: %s", err)
 	}
 
 	*cstr = CString(o.CString)
