@@ -38,7 +38,3 @@ func FuzzArrayBinary(f *testing.F) {
 func FuzzArrayJSON(f *testing.F) {
 	fuzzJSON(f, arrayTestCases, func() bsontype { return new(Array) })
 }
-
-func BenchmarkArray(b *testing.B) {
-	benchmark(b, arrayTestCases, func() bsontype { return new(Array) })
-}

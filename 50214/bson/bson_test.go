@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -243,53 +242,4 @@ func fuzzJSON(f *testing.F, testCases []testCase, newFunc func() bsontype) {
 			assert.Equal(t, v, actualV, "expected: %s\nactual  : %s", v, actualV)
 		}
 	})
-}
-
-func benchmark(b *testing.B, testCases []testCase, newFunc func() bsontype) {
-	for _, tc := range testCases {
-		tc := tc
-		b.Run(tc.name, func(b *testing.B) {
-			b.Run("ReadFrom", func(b *testing.B) {
-				br := bytes.NewReader(tc.b)
-				var v bsontype
-				var readErr, seekErr error
-
-				b.ReportAllocs()
-				b.SetBytes(br.Size())
-				b.ResetTimer()
-
-				for i := 0; i < b.N; i++ {
-					v = newFunc()
-					readErr = v.ReadFrom(bufio.NewReader(br))
-					_, seekErr = br.Seek(io.SeekStart, 0)
-				}
-
-				b.StopTimer()
-
-				assert.NoError(b, readErr)
-				assert.NoError(b, seekErr)
-				assert.Equal(b, tc.v, v)
-			})
-
-			b.Run("UnmarshalJSON", func(b *testing.B) {
-				data := []byte(tc.j)
-				var v bsontype
-				var err error
-
-				b.ReportAllocs()
-				b.SetBytes(int64(len(data)))
-				b.ResetTimer()
-
-				for i := 0; i < b.N; i++ {
-					v = newFunc()
-					err = v.UnmarshalJSON(data)
-				}
-
-				b.StopTimer()
-
-				assert.NoError(b, err)
-				assert.Equal(b, tc.v, v)
-			})
-		})
-	}
 }
