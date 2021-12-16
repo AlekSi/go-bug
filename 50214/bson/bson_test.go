@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,14 +56,7 @@ func testBinary(t *testing.T, testCases []testCase, newFunc func() bsontype) {
 				err := v.ReadFrom(bufr)
 				if tc.bErr == "" {
 					assert.NoError(t, err)
-					if d, ok := v.(*Double); ok && math.IsNaN(float64(*d)) {
-						// NaN != NaN, do special handling
-						d, ok = tc.v.(*Double)
-						assert.True(t, ok)
-						assert.True(t, math.IsNaN(float64(*d)))
-					} else {
-						assert.Equal(t, tc.v, v, "expected: %s\nactual  : %s", tc.v, v)
-					}
+					assert.Equal(t, tc.v, v, "expected: %s\nactual  : %s", tc.v, v)
 					assert.Zero(t, br.Len(), "not all br bytes were consumed")
 					assert.Zero(t, bufr.Buffered(), "not all bufr bytes were consumed")
 					return
@@ -195,14 +187,7 @@ func testJSON(t *testing.T, testCases []testCase, newFunc func() bsontype) {
 				err := v.UnmarshalJSON([]byte(tc.j))
 				if tc.jErr == "" {
 					require.NoError(t, err)
-					if d, ok := v.(*Double); ok && math.IsNaN(float64(*d)) {
-						// NaN != NaN, do special handling
-						d, ok = tc.v.(*Double)
-						assert.True(t, ok)
-						assert.True(t, math.IsNaN(float64(*d)))
-					} else {
-						assert.Equal(t, tc.v, v, "expected: %s\nactual  : %s", tc.v, v)
-					}
+					assert.Equal(t, tc.v, v, "expected: %s\nactual  : %s", tc.v, v)
 					return
 				}
 
@@ -269,14 +254,7 @@ func fuzzJSON(f *testing.F, testCases []testCase, newFunc func() bsontype) {
 			actualV := newFunc()
 			err := actualV.UnmarshalJSON([]byte(j))
 			require.NoError(t, err)
-			if d, ok := v.(*Double); ok && math.IsNaN(float64(*d)) {
-				// NaN != NaN, do special handling
-				d, ok = actualV.(*Double)
-				assert.True(t, ok)
-				assert.True(t, math.IsNaN(float64(*d)))
-			} else {
-				assert.Equal(t, v, actualV, "expected: %s\nactual  : %s", v, actualV)
-			}
+			assert.Equal(t, v, actualV, "expected: %s\nactual  : %s", v, actualV)
 		}
 	})
 }

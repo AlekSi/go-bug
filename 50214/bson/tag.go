@@ -19,10 +19,7 @@ package bson
 type tag byte
 
 const (
-	tagDouble   = tag(0x01) // Double
 	tagString   = tag(0x02) // String
 	tagDocument = tag(0x03) // Document
 	tagArray    = tag(0x04) // Array
-	tagBinary   = tag(0x05) // Binary
-	tagBool     = tag(0x08) // Bool
 )

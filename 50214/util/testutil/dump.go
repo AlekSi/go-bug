@@ -17,28 +17,9 @@ package testutil
 import (
 	"os"
 	"path/filepath"
-	"testing"
-
-	"github.com/stretchr/testify/require"
 
 	"github.com/AlekSi/go-bug/50214/util/hex"
 )
-
-func ParseDump(tb testing.TB, s string) []byte {
-	tb.Helper()
-
-	b, err := hex.ParseDump(s)
-	require.NoError(tb, err)
-	return b
-}
-
-func ParseDumpFile(tb testing.TB, path ...string) []byte {
-	tb.Helper()
-
-	b, err := os.ReadFile(filepath.Join(path...))
-	require.NoError(tb, err)
-	return ParseDump(tb, string(b))
-}
 
 func mustParseDump(s string) []byte {
 	b, err := hex.ParseDump(s)

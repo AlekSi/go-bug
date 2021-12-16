@@ -134,13 +134,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 		doc.keys = append(doc.keys, string(ename))
 
 		switch tag(t) {
-		case tagDouble:
-			var v Double
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (Double): %w", err)
-			}
-			doc.m[string(ename)] = float64(v)
-
 		case tagString:
 			var v String
 			if err := v.ReadFrom(bufr); err != nil {
@@ -168,13 +161,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 				return fmt.Errorf("bson.Document.ReadFrom (Array): %w", err)
 			}
 			doc.m[string(ename)] = types.Array(v)
-
-		case tagBool:
-			var v Bool
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (Bool): %w", err)
-			}
-			doc.m[string(ename)] = bool(v)
 
 		default:
 			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x", t)
@@ -216,15 +202,6 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 		}
 
 		switch elV := elV.(type) {
-		case float64:
-			bufw.WriteByte(byte(tagDouble))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := Double(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
 		case string:
 			bufw.WriteByte(byte(tagString))
 			if err := ename.WriteTo(bufw); err != nil {
@@ -253,15 +230,6 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 				return nil, err
 			}
 			if err := Array(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
-		case bool:
-			bufw.WriteByte(byte(tagBool))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := Bool(elV).WriteTo(bufw); err != nil {
 				return nil, err
 			}
 
@@ -303,10 +271,6 @@ func unmarshalJSONValue(data []byte) (any, error) {
 	switch v := v.(type) {
 	case map[string]any:
 		switch {
-		case v["$f"] != nil:
-			var o Double
-			err = o.UnmarshalJSON(data)
-			res = float64(o)
 		case v["$k"] != nil:
 			var o Document
 			err = o.UnmarshalJSON(data)
@@ -322,12 +286,6 @@ func unmarshalJSONValue(data []byte) (any, error) {
 		var o Array
 		err = o.UnmarshalJSON(data)
 		res = types.Array(o)
-	case bool:
-		res = v
-	case nil:
-		res = v
-	case float64:
-		res = int32(v)
 	default:
 		err = fmt.Errorf("unmarshalJSONValue: unhandled element %[1]T (%[1]v)", v)
 	}
@@ -395,16 +353,12 @@ func marshalJSONValue(v any) ([]byte, error) {
 	var o json.Marshaler
 	var err error
 	switch v := v.(type) {
-	case float64:
-		o = Double(v)
 	case string:
 		o = String(v)
 	case types.Document:
 		o, err = ConvertDocument(v)
 	case types.Array:
 		o = Array(v)
-	case bool:
-		o = Bool(v)
 	case nil:
 		return []byte("null"), nil
 	default:
