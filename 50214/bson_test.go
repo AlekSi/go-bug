@@ -1,4 +1,4 @@
-package bson
+package bug
 
 import (
 	"bufio"
@@ -7,8 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/AlekSi/go-bug/50214/types"
 )
 
 type testCase struct {
@@ -64,8 +62,11 @@ func fuzzBinary(f *testing.F, testCases []testCase) {
 func FuzzBSONBinary(f *testing.F) {
 	bsonTestCases := []testCase{{
 		name: "bson",
-		v:    mustConvertDocument(types.MustMakeDocument()),
-		b:    []byte{0x05, 0x00, 0x00, 0x00, 0x00},
+		v: &Document{
+			m:    make(map[string]any),
+			keys: []string{},
+		},
+		b: []byte{0x05, 0x00, 0x00, 0x00, 0x00},
 	}}
 
 	fuzzBinary(f, bsonTestCases)
