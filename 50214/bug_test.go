@@ -3,11 +3,31 @@ package bug
 import (
 	"bufio"
 	"bytes"
+	"reflect"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
+
+type Document struct {
+	m    map[string]any
+	keys []string
+}
+
+func (doc *Document) ReadFrom(r *bufio.Reader) error {
+	r.Read(make([]byte, 5))
+
+	doc.m = map[string]any{}
+	doc.keys = []string{}
+	return nil
+}
+
+func (doc Document) WriteTo(w *bufio.Writer) error {
+	_, err := w.Write([]byte{0x05, 0x00, 0x00, 0x00, 0x00})
+	return err
+}
+
+func (doc Document) MarshalBinary() ([]byte, error) {
+	return []byte{0x05, 0x00, 0x00, 0x00, 0x00}, nil
+}
 
 type testCase struct {
 	name string
@@ -42,8 +62,12 @@ func fuzzBinary(f *testing.F, testCases []testCase) {
 		// test MarshalBinary
 		{
 			actualB, err := v.MarshalBinary()
-			require.NoError(t, err)
-			assert.Equal(t, expectedB, actualB, "MarshalBinary results differ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(expectedB, actualB) {
+				t.Fatal("MarshalBinary results differ")
+			}
 		}
 
 		// test WriteTo
@@ -51,10 +75,16 @@ func fuzzBinary(f *testing.F, testCases []testCase) {
 			var bw bytes.Buffer
 			bufw := bufio.NewWriter(&bw)
 			err := v.WriteTo(bufw)
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
+			}
 			err = bufw.Flush()
-			require.NoError(t, err)
-			assert.Equal(t, expectedB, bw.Bytes(), "WriteTo results differ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(expectedB, bw.Bytes()) {
+				t.Fatal("WriteTo results differ")
+			}
 		}
 	})
 }
