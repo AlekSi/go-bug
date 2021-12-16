@@ -19,21 +19,10 @@ package bson
 type tag byte
 
 const (
-	tagDouble          = tag(0x01) // Double
-	tagString          = tag(0x02) // String
-	tagDocument        = tag(0x03) // Document
-	tagArray           = tag(0x04) // Array
-	tagBinary          = tag(0x05) // Binary
-	tagUndefined       = tag(0x06) // Undefined
-	tagBool            = tag(0x08) // Bool
-	tagNull            = tag(0x0a) // Null
-	tagDBPointer       = tag(0x0c) // DBPointer
-	tagJavaScript      = tag(0x0d) // JavaScript
-	tagSymbol          = tag(0x0e) // Symbol
-	tagJavaScriptScope = tag(0x0f) // JavaScriptScope
-	tagInt32           = tag(0x10) // Int32
-	tagInt64           = tag(0x12) // Int64
-	tagDecimal         = tag(0x13) // Decimal
-	tagMinKey          = tag(0xff) // MinKey
-	tagMaxKey          = tag(0x7f) // MaxKey
+	tagDouble   = tag(0x01) // Double
+	tagString   = tag(0x02) // String
+	tagDocument = tag(0x03) // Document
+	tagArray    = tag(0x04) // Array
+	tagBinary   = tag(0x05) // Binary
+	tagBool     = tag(0x08) // Bool
 )

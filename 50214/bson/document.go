@@ -176,9 +176,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 			}
 			doc.m[string(ename)] = types.Binary(v)
 
-		case tagUndefined:
-			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type `Undefined (value) — Deprecated`")
-
 		case tagBool:
 			var v Bool
 			if err := v.ReadFrom(bufr); err != nil {
@@ -186,25 +183,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 			}
 			doc.m[string(ename)] = bool(v)
 
-		case tagNull:
-			doc.m[string(ename)] = nil
-
-		case tagInt32:
-			var v Int32
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (Int32): %w", err)
-			}
-			doc.m[string(ename)] = int32(v)
-
-		case tagInt64:
-			var v Int64
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (Int64): %w", err)
-			}
-			doc.m[string(ename)] = int64(v)
-
-		case tagDBPointer, tagDecimal, tagJavaScript, tagJavaScriptScope, tagMaxKey, tagMinKey, tagSymbol:
-			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x", t)
 		default:
 			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x", t)
 		}
@@ -303,30 +281,6 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 				return nil, err
 			}
 
-		case nil:
-			bufw.WriteByte(byte(tagNull))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
-		case int32:
-			bufw.WriteByte(byte(tagInt32))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := Int32(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
-		case int64:
-			bufw.WriteByte(byte(tagInt64))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := Int64(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
 		default:
 			return nil, fmt.Errorf("bson.Document.MarshalBinary: unhandled element type %T", elV)
 		}
@@ -379,10 +333,6 @@ func unmarshalJSONValue(data []byte) (any, error) {
 			var o Binary
 			err = o.UnmarshalJSON(data)
 			res = types.Binary(o)
-		case v["$l"] != nil:
-			var o Int64
-			err = o.UnmarshalJSON(data)
-			res = int64(o)
 		default:
 			err = fmt.Errorf("unmarshalJSONValue: unhandled map %v", v)
 		}
@@ -479,10 +429,6 @@ func marshalJSONValue(v any) ([]byte, error) {
 		o = Bool(v)
 	case nil:
 		return []byte("null"), nil
-	case int32:
-		o = Int32(v)
-	case int64:
-		o = Int64(v)
 	default:
 		return nil, fmt.Errorf("marshalJSONValue: unhandled type %T", v)
 	}
