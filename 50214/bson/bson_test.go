@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/hex"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,11 +16,6 @@ type testCase struct {
 	name string
 	v    bsontype
 	b    []byte
-	bErr string // unwrapped
-
-	j      string
-	canonJ string // canonical form without extra object fields, zero values, etc.
-	jErr   string // unwrapped
 }
 
 func testBinary(t *testing.T, testCases []testCase, newFunc func() bsontype) {
@@ -40,23 +34,10 @@ func testBinary(t *testing.T, testCases []testCase, newFunc func() bsontype) {
 				br := bytes.NewReader(tc.b)
 				bufr := bufio.NewReader(br)
 				err := v.ReadFrom(bufr)
-				if tc.bErr == "" {
-					assert.NoError(t, err)
-					assert.Equal(t, tc.v, v, "expected: %s\nactual  : %s", tc.v, v)
-					assert.Zero(t, br.Len(), "not all br bytes were consumed")
-					assert.Zero(t, bufr.Buffered(), "not all bufr bytes were consumed")
-					return
-				}
-
-				require.Error(t, err)
-				for {
-					e := errors.Unwrap(err)
-					if e == nil {
-						break
-					}
-					err = e
-				}
-				require.Equal(t, tc.bErr, err.Error())
+				assert.NoError(t, err)
+				assert.Equal(t, tc.v, v, "expected: %s\nactual  : %s", tc.v, v)
+				assert.Zero(t, br.Len(), "not all br bytes were consumed")
+				assert.Zero(t, bufr.Buffered(), "not all bufr bytes were consumed")
 			})
 
 			t.Run("MarshalBinary", func(t *testing.T) {
@@ -150,7 +131,6 @@ var bsonTestCases = []testCase{{
 	name: "bson",
 	v:    mustConvertDocument(types.MustMakeDocument()),
 	b:    []byte{0x05, 0x00, 0x00, 0x00, 0x00},
-	j:    "[[],{\"$k\":[]}]",
 }}
 
 func TestBSON(t *testing.T) {
