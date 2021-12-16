@@ -7,16 +7,10 @@ import (
 	"testing"
 )
 
-type Document struct {
-	m    map[string]any
-	keys []string
-}
+type Document struct{}
 
 func (doc *Document) ReadFrom(r *bufio.Reader) error {
 	r.Read(make([]byte, 5))
-
-	doc.m = map[string]any{}
-	doc.keys = []string{}
 	return nil
 }
 
@@ -92,11 +86,8 @@ func fuzzBinary(f *testing.F, testCases []testCase) {
 func FuzzBSONBinary(f *testing.F) {
 	bsonTestCases := []testCase{{
 		name: "bson",
-		v: &Document{
-			m:    make(map[string]any),
-			keys: []string{},
-		},
-		b: []byte{0x05, 0x00, 0x00, 0x00, 0x00},
+		v:    new(Document),
+		b:    []byte{0x05, 0x00, 0x00, 0x00, 0x00},
 	}}
 
 	fuzzBinary(f, bsonTestCases)
