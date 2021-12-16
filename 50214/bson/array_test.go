@@ -25,14 +25,13 @@ var arrayTestCases = []testCase{{
 	name: "array_all",
 	v: &Array{
 		types.Array{},
-		types.Binary{Subtype: types.BinaryUser, B: []byte{0x42}},
 		true,
 		types.MustMakeDocument(),
 		42.13,
 		"foo",
 	},
 	b: testutil.MustParseDumpFile("testdata", "array_all.hex"),
-	j: "[[],{\"$b\":\"Qg==\",\"s\":128},true,{\"$k\":[]},{\"$f\":42.13},\"foo\"]",
+	j: "[[],true,{\"$k\":[]},{\"$f\":42.13},\"foo\"]",
 }}
 
 func TestArray(t *testing.T) {

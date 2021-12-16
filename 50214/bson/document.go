@@ -169,13 +169,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 			}
 			doc.m[string(ename)] = types.Array(v)
 
-		case tagBinary:
-			var v Binary
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (Binary): %w", err)
-			}
-			doc.m[string(ename)] = types.Binary(v)
-
 		case tagBool:
 			var v Bool
 			if err := v.ReadFrom(bufr); err != nil {
@@ -263,15 +256,6 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 				return nil, err
 			}
 
-		case types.Binary:
-			bufw.WriteByte(byte(tagBinary))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := Binary(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
 		case bool:
 			bufw.WriteByte(byte(tagBool))
 			if err := ename.WriteTo(bufw); err != nil {
@@ -329,10 +313,6 @@ func unmarshalJSONValue(data []byte) (any, error) {
 			if err == nil {
 				res, err = types.ConvertDocument(&o)
 			}
-		case v["$b"] != nil:
-			var o Binary
-			err = o.UnmarshalJSON(data)
-			res = types.Binary(o)
 		default:
 			err = fmt.Errorf("unmarshalJSONValue: unhandled map %v", v)
 		}
@@ -423,8 +403,6 @@ func marshalJSONValue(v any) ([]byte, error) {
 		o, err = ConvertDocument(v)
 	case types.Array:
 		o = Array(v)
-	case types.Binary:
-		o = Binary(v)
 	case bool:
 		o = Bool(v)
 	case nil:
