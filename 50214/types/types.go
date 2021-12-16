@@ -7,8 +7,6 @@ import (
 // validateValue validates value.
 func validateValue(value any) error {
 	switch value := value.(type) {
-	case string:
-		return nil
 	case Document:
 		return value.validate()
 	case Array:

@@ -26,10 +26,9 @@ var arrayTestCases = []testCase{{
 	v: &Array{
 		types.Array{},
 		types.MustMakeDocument(),
-		"foo",
 	},
 	b: testutil.MustParseDumpFile("testdata", "array_all.hex"),
-	j: "[[],{\"$k\":[]},\"foo\"]",
+	j: "[[],{\"$k\":[]}]",
 }}
 
 func TestArray(t *testing.T) {

@@ -19,7 +19,6 @@ package bson
 type tag byte
 
 const (
-	tagString   = tag(0x02) // String
 	tagDocument = tag(0x03) // Document
 	tagArray    = tag(0x04) // Array
 )

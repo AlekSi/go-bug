@@ -134,13 +134,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 		doc.keys = append(doc.keys, string(ename))
 
 		switch tag(t) {
-		case tagString:
-			var v String
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (String): %w", err)
-			}
-			doc.m[string(ename)] = string(v)
-
 		case tagDocument:
 			// TODO check maximum nesting
 
@@ -202,15 +195,6 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 		}
 
 		switch elV := elV.(type) {
-		case string:
-			bufw.WriteByte(byte(tagString))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := String(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
 		case types.Document:
 			bufw.WriteByte(byte(tagDocument))
 			if err := ename.WriteTo(bufw); err != nil {
@@ -280,8 +264,6 @@ func unmarshalJSONValue(data []byte) (any, error) {
 		default:
 			err = fmt.Errorf("unmarshalJSONValue: unhandled map %v", v)
 		}
-	case string:
-		res = v
 	case []any:
 		var o Array
 		err = o.UnmarshalJSON(data)
@@ -353,14 +335,10 @@ func marshalJSONValue(v any) ([]byte, error) {
 	var o json.Marshaler
 	var err error
 	switch v := v.(type) {
-	case string:
-		o = String(v)
 	case types.Document:
 		o, err = ConvertDocument(v)
 	case types.Array:
 		o = Array(v)
-	case nil:
-		return []byte("null"), nil
 	default:
 		return nil, fmt.Errorf("marshalJSONValue: unhandled type %T", v)
 	}
