@@ -2,12 +2,6 @@ package bson
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/binary"
-	"fmt"
-	"io"
-
-	"github.com/AlekSi/go-bug/50214/types"
 )
 
 const (
@@ -60,50 +54,10 @@ func (doc *Document) Keys() []string {
 
 // ReadFrom implements bsontype interface.
 func (doc *Document) ReadFrom(r *bufio.Reader) error {
-	var l int32
-	if err := binary.Read(r, binary.LittleEndian, &l); err != nil {
-		return fmt.Errorf("bson.Document.ReadFrom (binary.Read): %w", err)
-	}
-	if l < minDocumentLen || l > MaxDocumentLen {
-		return fmt.Errorf("bson.Document.ReadFrom: invalid length %d", l)
-	}
+	r.Read(make([]byte, 5))
 
-	// make buffer
-	b := make([]byte, l)
-
-	binary.LittleEndian.PutUint32(b, uint32(l))
-
-	// read e_list and terminating zero
-	n, err := io.ReadFull(r, b[4:])
-	if err != nil {
-		return fmt.Errorf("bson.Document.ReadFrom (io.ReadFull, expected %d, read %d): %w", len(b), n, err)
-	}
-
-	bufr := bufio.NewReader(bytes.NewReader(b[4:]))
 	doc.m = map[string]any{}
-	doc.keys = make([]string, 0, 2)
-
-	for {
-		t, err := bufr.ReadByte()
-		if err != nil {
-			return fmt.Errorf("bson.Document.ReadFrom (ReadByte): %w", err)
-		}
-
-		if t == 0 {
-			// documented ended
-			if _, err := bufr.Peek(1); err != io.EOF {
-				return fmt.Errorf("unexpected end of the document: %w", err)
-			}
-			break
-		}
-
-		panic("not reached")
-	}
-
-	if _, err := types.ConvertDocument(doc); err != nil {
-		return fmt.Errorf("bson.Document.ReadFrom: %w", err)
-	}
-
+	doc.keys = []string{}
 	return nil
 }
 
