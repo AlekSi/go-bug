@@ -102,29 +102,7 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 			break
 		}
 
-		var ename CString
-		if err := ename.ReadFrom(bufr); err != nil {
-			return fmt.Errorf("bson.Document.ReadFrom (ename.ReadFrom): %w", err)
-		}
-
-		doc.keys = append(doc.keys, string(ename))
-
-		switch tag(t) {
-		case tagDocument:
-			// TODO check maximum nesting
-
-			var v Document
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (embedded document): %w", err)
-			}
-			doc.m[string(ename)], err = types.ConvertDocument(&v)
-			if err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (embedded document): %w", err)
-			}
-
-		default:
-			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x", t)
-		}
+		panic("not reached")
 	}
 
 	if _, err := types.ConvertDocument(doc); err != nil {
@@ -153,29 +131,6 @@ func (doc Document) WriteTo(w *bufio.Writer) error {
 func (doc Document) MarshalBinary() ([]byte, error) {
 	var elist bytes.Buffer
 	bufw := bufio.NewWriter(&elist)
-
-	for _, elK := range doc.keys {
-		ename := CString(elK)
-		elV, ok := doc.m[elK]
-		if !ok {
-			panic(fmt.Sprintf("%q not found in map", elK))
-		}
-
-		switch elV := elV.(type) {
-		case types.Document:
-			bufw.WriteByte(byte(tagDocument))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			doc := mustConvertDocument(elV)
-			if err := doc.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
-		default:
-			return nil, fmt.Errorf("bson.Document.MarshalBinary: unhandled element type %T", elV)
-		}
-	}
 
 	if err := bufw.Flush(); err != nil {
 		return nil, err
