@@ -48,17 +48,6 @@ import (
 	"time"
 )
 
-type (
-	ObjectID [12]byte
-
-	Regex struct {
-		Pattern string
-		Options string
-	}
-
-	Timestamp uint64
-)
-
 // validateValue validates value.
 func validateValue(value any) error {
 	switch value := value.(type) {
@@ -72,19 +61,13 @@ func validateValue(value any) error {
 		return nil
 	case Binary:
 		return nil
-	case ObjectID:
-		return nil
 	case bool:
 		return nil
 	case time.Time:
 		return nil
 	case nil:
 		return nil
-	case Regex:
-		return nil
 	case int32:
-		return nil
-	case Timestamp:
 		return nil
 	case int64:
 		return nil

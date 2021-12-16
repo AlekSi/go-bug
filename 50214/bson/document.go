@@ -180,13 +180,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 		case tagUndefined:
 			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type `Undefined (value) — Deprecated`")
 
-		case tagObjectID:
-			var v ObjectID
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (ObjectID): %w", err)
-			}
-			doc.m[string(ename)] = types.ObjectID(v)
-
 		case tagBool:
 			var v Bool
 			if err := v.ReadFrom(bufr); err != nil {
@@ -204,26 +197,12 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 		case tagNull:
 			doc.m[string(ename)] = nil
 
-		case tagRegex:
-			var v Regex
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (Regex): %w", err)
-			}
-			doc.m[string(ename)] = types.Regex(v)
-
 		case tagInt32:
 			var v Int32
 			if err := v.ReadFrom(bufr); err != nil {
 				return fmt.Errorf("bson.Document.ReadFrom (Int32): %w", err)
 			}
 			doc.m[string(ename)] = int32(v)
-
-		case tagTimestamp:
-			var v Timestamp
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (Timestamp): %w", err)
-			}
-			doc.m[string(ename)] = types.Timestamp(v)
 
 		case tagInt64:
 			var v Int64
@@ -323,15 +302,6 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 				return nil, err
 			}
 
-		case types.ObjectID:
-			bufw.WriteByte(byte(tagObjectID))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := ObjectID(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
 		case bool:
 			bufw.WriteByte(byte(tagBool))
 			if err := ename.WriteTo(bufw); err != nil {
@@ -356,30 +326,12 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 				return nil, err
 			}
 
-		case types.Regex:
-			bufw.WriteByte(byte(tagRegex))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := Regex(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
 		case int32:
 			bufw.WriteByte(byte(tagInt32))
 			if err := ename.WriteTo(bufw); err != nil {
 				return nil, err
 			}
 			if err := Int32(elV).WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
-		case types.Timestamp:
-			bufw.WriteByte(byte(tagTimestamp))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := Timestamp(elV).WriteTo(bufw); err != nil {
 				return nil, err
 			}
 
@@ -444,22 +396,10 @@ func unmarshalJSONValue(data []byte) (any, error) {
 			var o Binary
 			err = o.UnmarshalJSON(data)
 			res = types.Binary(o)
-		case v["$o"] != nil:
-			var o ObjectID
-			err = o.UnmarshalJSON(data)
-			res = types.ObjectID(o)
 		case v["$d"] != nil:
 			var o DateTime
 			err = o.UnmarshalJSON(data)
 			res = time.Time(o)
-		case v["$r"] != nil:
-			var o Regex
-			err = o.UnmarshalJSON(data)
-			res = types.Regex(o)
-		case v["$t"] != nil:
-			var o Timestamp
-			err = o.UnmarshalJSON(data)
-			res = types.Timestamp(o)
 		case v["$l"] != nil:
 			var o Int64
 			err = o.UnmarshalJSON(data)
@@ -556,20 +496,14 @@ func marshalJSONValue(v any) ([]byte, error) {
 		o = Array(v)
 	case types.Binary:
 		o = Binary(v)
-	case types.ObjectID:
-		o = ObjectID(v)
 	case bool:
 		o = Bool(v)
 	case time.Time:
 		o = DateTime(v)
 	case nil:
 		return []byte("null"), nil
-	case types.Regex:
-		o = Regex(v)
 	case int32:
 		o = Int32(v)
-	case types.Timestamp:
-		o = Timestamp(v)
 	case int64:
 		o = Int64(v)
 	default:

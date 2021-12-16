@@ -189,17 +189,14 @@ var (
 			"double", types.Array{42.13, 0.0},
 			"int32", types.Array{int32(42), int32(0)},
 			"int64", types.Array{int64(42), int64(0)},
-			"objectID", types.Array{types.ObjectID{0x42}, types.ObjectID{}},
 			"string", types.Array{"foo", ""},
-			"timestamp", types.Array{types.Timestamp(42), types.Timestamp(0)},
 		)),
 		b: testutil.MustParseDumpFile("testdata", "all.hex"),
-		j: `{"$k":["binary","bool","datetime","double","int32","int64","objectID","string","timestamp"],` +
+		j: `{"$k":["binary","bool","datetime","double","int32","int64","string"],` +
 			`"binary":[{"$b":"Qg==","s":128},{"$b":"","s":0}],"bool":[true,false],` +
 			`"datetime":[{"$d":1627378542123},{"$d":-62135596800000}],"double":[{"$f":42.13},{"$f":0}],` +
 			`"int32":[42,0],"int64":[{"$l":"42"},{"$l":"0"}],` +
-			`"objectID":[{"$o":"420000000000000000000000"},{"$o":"000000000000000000000000"}],` +
-			`"string":["foo",""],"timestamp":[{"$t":"42"},{"$t":"0"}]}`,
+			`"string":["foo",""]`,
 	}
 
 	documentTestCases = []testCase{handshake1, handshake2, handshake3, handshake4, all}
