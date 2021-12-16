@@ -116,37 +116,16 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 func (doc Document) WriteTo(w *bufio.Writer) error {
 	v, err := doc.MarshalBinary()
 	if err != nil {
-		return fmt.Errorf("bson.Document.WriteTo: %w", err)
+		return err
 	}
 
 	_, err = w.Write(v)
-	if err != nil {
-		return fmt.Errorf("bson.Document.WriteTo: %w", err)
-	}
-
-	return nil
+	return err
 }
 
 // MarshalBinary implements bsontype interface.
 func (doc Document) MarshalBinary() ([]byte, error) {
-	var elist bytes.Buffer
-	bufw := bufio.NewWriter(&elist)
-
-	if err := bufw.Flush(); err != nil {
-		return nil, err
-	}
-
-	var res bytes.Buffer
-	l := int32(elist.Len() + 5)
-	binary.Write(&res, binary.LittleEndian, l)
-	if _, err := elist.WriteTo(&res); err != nil {
-		panic(err)
-	}
-	res.WriteByte(0)
-	if int32(res.Len()) != l {
-		panic(fmt.Sprintf("got %d, expected %d", res.Len(), l))
-	}
-	return res.Bytes(), nil
+	return []byte{0x05, 0x00, 0x00, 0x00, 0x00}, nil
 }
 
 // check interfaces
