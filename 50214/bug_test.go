@@ -7,26 +7,25 @@ import (
 	"testing"
 )
 
-type Document struct{}
+type Object struct{}
 
-func (doc *Document) ReadFrom(r *bufio.Reader) error {
-	r.Read(make([]byte, 5))
-	return nil
-}
-
-func (doc Document) WriteTo(w *bufio.Writer) error {
-	_, err := w.Write([]byte{0x05, 0x00, 0x00, 0x00, 0x00})
+func (o *Object) ReadFrom(r *bufio.Reader) error {
+	_, err := r.ReadByte()
 	return err
 }
 
-func (doc Document) MarshalBinary() ([]byte, error) {
-	return []byte{0x05, 0x00, 0x00, 0x00, 0x00}, nil
+func (o Object) WriteTo(w *bufio.Writer) error {
+	_, err := w.Write([]byte{0x42})
+	return err
+}
+
+func (o Object) MarshalBinary() ([]byte, error) {
+	return []byte{0x42}, nil
 }
 
 type testCase struct {
-	name string
-	v    *Document
-	b    []byte
+	o *Object
+	b []byte
 }
 
 func fuzzBinary(f *testing.F, testCases []testCase) {
@@ -37,12 +36,12 @@ func fuzzBinary(f *testing.F, testCases []testCase) {
 	f.Fuzz(func(t *testing.T, b []byte) {
 		t.Parallel()
 
-		var v *Document
+		var v *Object
 		var expectedB []byte
 
 		// test ReadFrom
 		{
-			v = new(Document)
+			v = new(Object)
 			br := bytes.NewReader(b)
 			bufr := bufio.NewReader(br)
 			if err := v.ReadFrom(bufr); err != nil {
@@ -83,12 +82,9 @@ func fuzzBinary(f *testing.F, testCases []testCase) {
 	})
 }
 
-func FuzzBSONBinary(f *testing.F) {
-	bsonTestCases := []testCase{{
-		name: "bson",
-		v:    new(Document),
-		b:    []byte{0x05, 0x00, 0x00, 0x00, 0x00},
-	}}
-
-	fuzzBinary(f, bsonTestCases)
+func FuzzBinary(f *testing.F) {
+	fuzzBinary(f, []testCase{{
+		o: new(Object),
+		b: []byte{0x42},
+	}})
 }
