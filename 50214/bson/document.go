@@ -30,7 +30,7 @@ type Document struct {
 
 // convertDocument converts types.Document to bson.Document and validates it.
 // It references the same data without copying it.
-func convertDocument(d document) (*Document, error) {
+func mustConvertDocument(d document) *Document {
 	doc := &Document{
 		m:    d.Map(),
 		keys: d.Keys(),
@@ -45,10 +45,10 @@ func convertDocument(d document) (*Document, error) {
 
 	// for validation
 	if _, err := types.ConvertDocument(doc); err != nil {
-		return nil, fmt.Errorf("bson.ConvertDocument: %w", err)
+		panic(err)
 	}
 
-	return doc, nil
+	return doc
 }
 
 func (doc *Document) bsontype() {}
@@ -122,15 +122,6 @@ func (doc *Document) ReadFrom(r *bufio.Reader) error {
 				return fmt.Errorf("bson.Document.ReadFrom (embedded document): %w", err)
 			}
 
-		case tagArray:
-			// TODO check maximum nesting
-
-			var v Array
-			if err := v.ReadFrom(bufr); err != nil {
-				return fmt.Errorf("bson.Document.ReadFrom (Array): %w", err)
-			}
-			doc.m[string(ename)] = types.Array(v)
-
 		default:
 			return fmt.Errorf("bson.Document.ReadFrom: unhandled element type %#02x", t)
 		}
@@ -176,20 +167,8 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 			if err := ename.WriteTo(bufw); err != nil {
 				return nil, err
 			}
-			doc, err := convertDocument(elV)
-			if err != nil {
-				return nil, err
-			}
+			doc := mustConvertDocument(elV)
 			if err := doc.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-
-		case types.Array:
-			bufw.WriteByte(byte(tagArray))
-			if err := ename.WriteTo(bufw); err != nil {
-				return nil, err
-			}
-			if err := Array(elV).WriteTo(bufw); err != nil {
 				return nil, err
 			}
 

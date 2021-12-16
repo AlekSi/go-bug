@@ -180,28 +180,22 @@ func fuzzBinary(f *testing.F, testCases []testCase, newFunc func() bsontype) {
 	})
 }
 
-var arrayTestCases = []testCase{{
-	name: "array_all",
-	v: &Array{
-		types.Array{},
-		types.MustMakeDocument(),
-	},
-	b: mustParseDump(`
-	00000000  15 00 00 00 04 30 00 05  00 00 00 00 03 31 00 05  |.....0.......1..|
-	00000010  00 00 00 00 00                                    |.....|
-		`),
-	j: "[[],{\"$k\":[]}]",
+var bsonTestCases = []testCase{{
+	name: "bson",
+	v:    mustConvertDocument(types.MustMakeDocument()),
+	b:    mustParseDump(`00000000  05 00 00 00 00                                    |.....|`),
+	j:    "[[],{\"$k\":[]}]",
 }}
 
-func TestArray(t *testing.T) {
+func TestBSON(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Binary", func(t *testing.T) {
 		t.Parallel()
-		testBinary(t, arrayTestCases, func() bsontype { return new(Array) })
+		testBinary(t, bsonTestCases, func() bsontype { return new(Document) })
 	})
 }
 
-func FuzzArrayBinary(f *testing.F) {
-	fuzzBinary(f, arrayTestCases, func() bsontype { return new(Array) })
+func FuzzBSONBinary(f *testing.F) {
+	fuzzBinary(f, bsonTestCases, func() bsontype { return new(Document) })
 }
