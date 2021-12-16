@@ -29,9 +29,9 @@ type Document struct {
 	keys []string
 }
 
-// ConvertDocument converts types.Document to bson.Document and validates it.
+// convertDocument converts types.Document to bson.Document and validates it.
 // It references the same data without copying it.
-func ConvertDocument(d document) (*Document, error) {
+func convertDocument(d document) (*Document, error) {
 	doc := &Document{
 		m:    d.Map(),
 		keys: d.Keys(),
@@ -50,15 +50,6 @@ func ConvertDocument(d document) (*Document, error) {
 	}
 
 	return doc, nil
-}
-
-// MustConvertDocument is a ConvertDocument that panics in case of error.
-func MustConvertDocument(d document) *Document {
-	doc, err := ConvertDocument(d)
-	if err != nil {
-		panic(err)
-	}
-	return doc
 }
 
 func (doc *Document) bsontype() {}
@@ -186,7 +177,7 @@ func (doc Document) MarshalBinary() ([]byte, error) {
 			if err := ename.WriteTo(bufw); err != nil {
 				return nil, err
 			}
-			doc, err := ConvertDocument(elV)
+			doc, err := convertDocument(elV)
 			if err != nil {
 				return nil, err
 			}
@@ -322,7 +313,7 @@ func marshalJSONValue(v any) ([]byte, error) {
 	var err error
 	switch v := v.(type) {
 	case types.Document:
-		o, err = ConvertDocument(v)
+		o, err = convertDocument(v)
 	case types.Array:
 		o = Array(v)
 	default:
