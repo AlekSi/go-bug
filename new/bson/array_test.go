@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/AlekSi/go-bug/new/types"
-	"github.com/AlekSi/go-bug/new/util/testutil"
 )
 
 var arrayTestCases = []testCase{{
@@ -13,7 +12,7 @@ var arrayTestCases = []testCase{{
 		types.Array{},
 		types.MustMakeDocument(),
 	},
-	b: testutil.MustParseDumpFile("testdata", "array_all.hex"),
+	b: []byte{0x15, 0x00, 0x00, 0x00, 0x04, 0x30, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x03, 0x31, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00},
 	j: "[[],{\"$k\":[]}]",
 }}
 
