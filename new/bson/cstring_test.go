@@ -39,7 +39,3 @@ func FuzzCStringBinary(f *testing.F) {
 func FuzzCStringJSON(f *testing.F) {
 	fuzzJSON(f, cstringTestCases, func() bsontype { return new(CString) })
 }
-
-func BenchmarkCString(b *testing.B) {
-	benchmark(b, cstringTestCases, func() bsontype { return new(CString) })
-}
