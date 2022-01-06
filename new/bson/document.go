@@ -43,11 +43,6 @@ func ConvertDocument(d document) (*Document, error) {
 		doc.keys = []string{}
 	}
 
-	// for validation
-	if _, err := types.ConvertDocument(doc); err != nil {
-		return nil, fmt.Errorf("bson.ConvertDocument: %w", err)
-	}
-
 	return doc, nil
 }
 

@@ -37,10 +37,6 @@ func ConvertDocument(d document) (Document, error) {
 		doc.keys = []string{}
 	}
 
-	if err := doc.validate(); err != nil {
-		return doc, fmt.Errorf("types.ConvertDocument: %w", err)
-	}
-
 	return doc, nil
 }
 
@@ -67,10 +63,6 @@ func MakeDocument(pairs ...any) (Document, error) {
 		}
 	}
 
-	if err := doc.validate(); err != nil {
-		return doc, fmt.Errorf("types.MakeDocument: %w", err)
-	}
-
 	return doc, nil
 }
 
@@ -81,28 +73,6 @@ func MustMakeDocument(pairs ...any) Document {
 		panic(err)
 	}
 	return doc
-}
-
-// validate checks if the document is valid.
-func (d Document) validate() error {
-	if len(d.m) != len(d.keys) {
-		return fmt.Errorf("types.Document.validate: keys and values count mismatch: %d != %d", len(d.m), len(d.keys))
-	}
-
-	prevKeys := make(map[string]struct{}, len(d.keys))
-	for _, key := range d.keys {
-		_, ok := d.m[key]
-		if !ok {
-			return fmt.Errorf("types.Document.validate: key not found: %q", key)
-		}
-
-		if _, ok := prevKeys[key]; ok {
-			return fmt.Errorf("types.Document.validate: duplicate key: %q", key)
-		}
-		prevKeys[key] = struct{}{}
-	}
-
-	return nil
 }
 
 // Map returns a shallow copy of the document as a map. Do not modify it.
