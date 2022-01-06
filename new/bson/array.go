@@ -2,8 +2,6 @@ package bson
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"strconv"
 )
@@ -72,58 +70,6 @@ func (arr Array) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 	return b, nil
-}
-
-// UnmarshalJSON implements bsontype interface.
-func (arr *Array) UnmarshalJSON(data []byte) error {
-	if bytes.Equal(data, []byte("null")) {
-		panic("null data")
-	}
-
-	r := bytes.NewReader(data)
-	dec := json.NewDecoder(r)
-
-	var rawMessages []json.RawMessage
-	if err := dec.Decode(&rawMessages); err != nil {
-		return err
-	}
-	if err := checkConsumed(dec, r); err != nil {
-		return err
-	}
-
-	*arr = make(Array, len(rawMessages))
-	for i, el := range rawMessages {
-		v, err := unmarshalJSONValue(el)
-		if err != nil {
-			return err
-		}
-
-		(*arr)[i] = v
-	}
-
-	return nil
-}
-
-// MarshalJSON implements bsontype interface.
-func (arr Array) MarshalJSON() ([]byte, error) {
-	var buf bytes.Buffer
-	buf.WriteByte('[')
-
-	for i, el := range arr {
-		if i != 0 {
-			buf.WriteByte(',')
-		}
-
-		b, err := marshalJSONValue(el)
-		if err != nil {
-			return nil, err
-		}
-
-		buf.Write(b)
-	}
-
-	buf.WriteByte(']')
-	return buf.Bytes(), nil
 }
 
 // check interfaces
