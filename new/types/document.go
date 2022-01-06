@@ -2,9 +2,20 @@ package types
 
 import (
 	"fmt"
-	"strings"
 	"unicode/utf8"
 )
+
+// validateValue validates value.
+func validateValue(value any) error {
+	switch value := value.(type) {
+	case Document:
+		return value.validate()
+	case Array:
+		return nil
+	default:
+		return fmt.Errorf("types.validateValue: unsupported type: %T", value)
+	}
+}
 
 // isValidKey returns false if key is not a valid document field key.
 func isValidKey(key string) bool {
@@ -53,15 +64,6 @@ func ConvertDocument(d document) (Document, error) {
 	}
 
 	return doc, nil
-}
-
-// MustConvertDocument is a ConvertDocument that panics in case of error.
-func MustConvertDocument(d document) Document {
-	doc, err := ConvertDocument(d)
-	if err != nil {
-		panic(err)
-	}
-	return doc
 }
 
 // MakeDocument makes a new Document from given key/value pairs.
@@ -143,11 +145,6 @@ func (d Document) Keys() []string {
 	return d.keys
 }
 
-// Command returns the first document's key, this is often used as a command name.
-func (d Document) Command() string {
-	return strings.ToLower(d.keys[0])
-}
-
 func (d *Document) add(key string, value any) error {
 	if _, ok := d.m[key]; ok {
 		return fmt.Errorf("types.Document.add: key already present: %q", key)
@@ -165,53 +162,6 @@ func (d *Document) add(key string, value any) error {
 	d.m[key] = value
 
 	return nil
-}
-
-// Get returns a value at the given key.
-func (d Document) Get(key string) (any, error) {
-	if value, ok := d.m[key]; ok {
-		return value, nil
-	}
-
-	return nil, fmt.Errorf("types.Document.Get: key not found: %q", key)
-}
-
-// Set the value of the given key, replacing any existing value.
-func (d *Document) Set(key string, value any) error {
-	if !isValidKey(key) {
-		return fmt.Errorf("types.Document.Set: invalid key: %q", key)
-	}
-
-	if err := validateValue(value); err != nil {
-		return fmt.Errorf("types.Document.validate: %w", err)
-	}
-
-	if _, ok := d.m[key]; !ok {
-		d.keys = append(d.keys, key)
-	}
-
-	d.m[key] = value
-
-	return nil
-}
-
-// Remove the given key, doing nothing if the key does not exist.
-func (d *Document) Remove(key string) {
-	if _, ok := d.m[key]; !ok {
-		return
-	}
-
-	delete(d.m, key)
-
-	for i, k := range d.keys {
-		if k == key {
-			d.keys = append(d.keys[:i], d.keys[i+1:]...)
-			return
-		}
-	}
-
-	// should not be reached
-	panic(fmt.Sprintf("types.Document.Remove: key not found: %q", key))
 }
 
 // check interfaces
