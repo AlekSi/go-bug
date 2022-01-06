@@ -2,29 +2,7 @@ package types
 
 import (
 	"fmt"
-	"unicode/utf8"
 )
-
-// validateValue validates value.
-func validateValue(value any) error {
-	switch value := value.(type) {
-	case Document:
-		return value.validate()
-	case Array:
-		return nil
-	default:
-		return fmt.Errorf("types.validateValue: unsupported type: %T", value)
-	}
-}
-
-// isValidKey returns false if key is not a valid document field key.
-func isValidKey(key string) bool {
-	if key == "" {
-		return false
-	}
-
-	return utf8.ValidString(key)
-}
 
 // Common interface with bson.Document.
 type document interface {
@@ -113,11 +91,7 @@ func (d Document) validate() error {
 
 	prevKeys := make(map[string]struct{}, len(d.keys))
 	for _, key := range d.keys {
-		if !isValidKey(key) {
-			return fmt.Errorf("types.Document.validate: invalid key: %q", key)
-		}
-
-		value, ok := d.m[key]
+		_, ok := d.m[key]
 		if !ok {
 			return fmt.Errorf("types.Document.validate: key not found: %q", key)
 		}
@@ -126,10 +100,6 @@ func (d Document) validate() error {
 			return fmt.Errorf("types.Document.validate: duplicate key: %q", key)
 		}
 		prevKeys[key] = struct{}{}
-
-		if err := validateValue(value); err != nil {
-			return fmt.Errorf("types.Document.validate: %w", err)
-		}
 	}
 
 	return nil
@@ -148,14 +118,6 @@ func (d Document) Keys() []string {
 func (d *Document) add(key string, value any) error {
 	if _, ok := d.m[key]; ok {
 		return fmt.Errorf("types.Document.add: key already present: %q", key)
-	}
-
-	if !isValidKey(key) {
-		return fmt.Errorf("types.Document.add: invalid key: %q", key)
-	}
-
-	if err := validateValue(value); err != nil {
-		return fmt.Errorf("types.Document.validate: %w", err)
 	}
 
 	d.keys = append(d.keys, key)
