@@ -18,20 +18,6 @@ var cstringTestCases = []testCase{{
 	j:    `{"$c":""}`,
 }}
 
-func TestCString(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Binary", func(t *testing.T) {
-		t.Parallel()
-		testBinary(t, cstringTestCases, func() bsontype { return new(CString) })
-	})
-
-	t.Run("JSON", func(t *testing.T) {
-		t.Parallel()
-		testJSON(t, cstringTestCases, func() bsontype { return new(CString) })
-	})
-}
-
 func FuzzCStringBinary(f *testing.F) {
 	fuzzBinary(f, cstringTestCases, func() bsontype { return new(CString) })
 }
