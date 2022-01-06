@@ -21,7 +21,3 @@ var cstringTestCases = []testCase{{
 func FuzzCStringBinary(f *testing.F) {
 	fuzzBinary(f, cstringTestCases, func() bsontype { return new(CString) })
 }
-
-func FuzzCStringJSON(f *testing.F) {
-	fuzzJSON(f, cstringTestCases, func() bsontype { return new(CString) })
-}

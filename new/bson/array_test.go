@@ -20,7 +20,3 @@ var arrayTestCases = []testCase{{
 func FuzzArrayBinary(f *testing.F) {
 	fuzzBinary(f, arrayTestCases, func() bsontype { return new(Array) })
 }
-
-func FuzzArrayJSON(f *testing.F) {
-	fuzzJSON(f, arrayTestCases, func() bsontype { return new(Array) })
-}
