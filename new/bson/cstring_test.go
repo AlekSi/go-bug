@@ -4,12 +4,11 @@ import (
 	"testing"
 )
 
-var cstringTestCases = []testCase{{
-	b: []byte{0x66, 0x6f, 0x6f, 0x00},
-}, {
-	b: []byte{0x00},
-}}
+func Fuzz1(f *testing.F) {
+	f.Add([]byte{})
+	f.Add([]byte{})
 
-func FuzzCStringBinary(f *testing.F) {
-	fuzzBinary(f, cstringTestCases)
+	f.Fuzz(func(t *testing.T, b []byte) {
+		t.Parallel()
+	})
 }
