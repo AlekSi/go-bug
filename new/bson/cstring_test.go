@@ -10,13 +10,9 @@ func cstringP(s string) *CString {
 }
 
 var cstringTestCases = []testCase{{
-	name: "foo",
-	v:    cstringP("foo"),
-	b:    []byte{0x66, 0x6f, 0x6f, 0x00},
+	b: []byte{0x66, 0x6f, 0x6f, 0x00},
 }, {
-	name: "empty",
-	v:    cstringP(""),
-	b:    []byte{0x00},
+	b: []byte{0x00},
 }}
 
 func FuzzCStringBinary(f *testing.F) {
