@@ -8,7 +8,7 @@ type testCase struct {
 	b []byte
 }
 
-func fuzzBinary(f *testing.F, testCases []testCase, newFunc func() bsontype) {
+func fuzzBinary(f *testing.F, testCases []testCase) {
 	for _, tc := range testCases {
 		f.Add(tc.b)
 	}
