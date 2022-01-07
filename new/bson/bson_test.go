@@ -13,11 +13,6 @@ type testCase struct {
 	name string
 	v    bsontype
 	b    []byte
-	bErr string // unwrapped
-
-	j      string
-	canonJ string // canonical form without extra object fields, zero values, etc.
-	jErr   string // unwrapped
 }
 
 func fuzzBinary(f *testing.F, testCases []testCase, newFunc func() bsontype) {

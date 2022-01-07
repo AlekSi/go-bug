@@ -2,20 +2,21 @@ package bson
 
 import (
 	"testing"
-
-	"github.com/AlekSi/pointer"
 )
+
+func cstringP(s string) *CString {
+	c := CString(s)
+	return &c
+}
 
 var cstringTestCases = []testCase{{
 	name: "foo",
-	v:    pointer.To(CString("foo")),
+	v:    cstringP("foo"),
 	b:    []byte{0x66, 0x6f, 0x6f, 0x00},
-	j:    `{"$c":"foo"}`,
 }, {
 	name: "empty",
-	v:    pointer.To(CString("")),
+	v:    cstringP(""),
 	b:    []byte{0x00},
-	j:    `{"$c":""}`,
 }}
 
 func FuzzCStringBinary(f *testing.F) {
